@@ -1,0 +1,415 @@
+Ejemplo 1:
+
+CLASES
+
+ Ejemplo 2: Clase con constructor primario y propiedades inmutables
+
+class Persona(val nombre: String, val edad: Int)
+
+Aquí se declaran propiedades directamente en la cabecera de la clase, y son inmutables (val).
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Ejemplo 3: Clase con constructor primario y propiedades mutables
+
+class Producto(var nombre: String, var precio: Double)
+	
+Se usa var para que las propiedades puedan modificarse después de crear el objeto.
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Ejemplo 4: Clase con constructor primario y propiedades declaradas internamente
+
+class Cliente(nombreInicial: String, edadInicial: Int) {
+    val nombre: String = nombreInicial
+    val edad: Int = edadInicial
+}
+
+Aquí el constructor recibe parámetros, pero las propiedades se declaran dentro del cuerpo de la clase.
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Ejemplo 5: Clase con bloque init para inicialización
+
+class Estudiante(nombre: String, edad: Int) {
+    val nombre: String
+    val edad: Int
+
+    init {
+        this.nombre = nombre
+        this.edad = edad
+    }
+}
+
+Se usa init para inicializar las propiedades usando los parámetros del constructor primario.
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+ Ejemplo 8: Constructor con valores por defecto
+
+class Usuario(val username: String, val email: String = "no disponible")
+
+Kotlin permite asignar valores por defecto a los parámetros del constructor primario.
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+DATA CLASS
+
+¿Qué es una data class?
+Una data class en Kotlin es una clase diseñada para almacenar datos. Al declararla, el compilador automáticamente genera por ti varias funciones útiles:
+
+toString() → representación en texto
+
+equals() y hashCode() → comparación de objetos
+
+copy() → crear una copia del objeto con o sin modificar propiedades
+
+componentN() → descomposición del objeto (destructuring)
+
+
+Las data class se usan cuando necesitas representar modelos de datos puros, como:
+
+Entidades de base de datos
+
+Modelos JSON para APIs
+
+Formularios o entradas de usuario
+
+Resultados de una operación
+
+Reglas para usar data class
+Debe tener al menos una propiedad en el constructor primario.
+
+Todas las propiedades que se usan para generar equals(), hashCode() y toString() deben estar en el constructor primario.
+
+No puede ser abstract, open, sealed o inner.
+
+Ejemplos:
+
+data class Producto(val codigo: String, val nombre: String, val precio: Double)
+
+fun main() {
+    // Crear una instancia
+    val producto1 = Producto("P001", "Laptop", 3500.0)
+
+    // Imprimir (usa toString automático)
+    println(producto1)  // Producto(codigo=P001, nombre=Laptop, precio=3500.0)
+
+    // Copiar con modificación
+    val producto2 = producto1.copy(nombre = "Laptop Gamer")
+
+    println(producto2)  // Producto(codigo=P001, nombre=Laptop Gamer, precio=3500.0)
+
+    // Comparar (usa equals automático)
+    println(producto1 == producto2) // false
+
+    // Desestructurar
+    val (codigo, nombre, precio) = producto2
+    println("Código: $codigo, Nombre: $nombre, Precio: $precio")
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+METODOS
+
+EJEMPLO: Ejemplo 3: Método que accede a propiedades
+
+class Persona(val nombre: String, val edad: Int) {
+    fun presentar() {
+        println("Hola, soy $nombre y tengo $edad años")
+    }
+}
+
+fun main() {
+    val persona = Persona("Lucía", 28)
+    persona.presentar() 
+}
+
+
+Ejemplo 2:
+
+data class Producto(val nombre: String, val precio: Double) {
+    fun aplicarDescuento(porcentaje: Double): Producto {
+        val nuevoPrecio = precio - (precio * porcentaje / 100)
+        return Producto(nombre, nuevoPrecio)
+    }
+}
+
+fun main() {
+    val prodOriginal = Producto("Laptop", 4000.0)
+    val prodConDescuento = prodOriginal.aplicarDescuento(10.0)
+
+    println(prodOriginal)
+    println(prodConDescuento)
+}
+
+
+Ejemplo 3:
+class Evaluacion(val nota: Double) {
+    fun obtenerResultado(): String {
+        return if (nota >= 13) "Aprobado" else "Desaprobado"
+    }
+}
+
+fun main() {
+    val eval1 = Evaluacion(15.0)
+    val eval2 = Evaluacion(10.0)
+
+    println(eval1.obtenerResultado())
+    println(eval2.obtenerResultado())
+
+    }
+
+Aquí no estás imprimiendo directamente el objeto eval1, sino el resultado de un método (obtenerResultado) que retorna un String, por eso funciona y ves "Aprobado" o "Desaprobado" en consola.
+
+
+
+//////////////EJEMPLO DE DATA CLASS Y CLASS
+
+class Producto(val nombre: String, val precio: Double)
+
+fun main() {
+    val p = Producto("Laptop", 4000.0)
+    println(p) // Aquí estás imprimiendo el OBJETO, no una cadena
+}
+
+Kotlin por defecto no genera un método toString() legible para clases normales. Entonces al hacer println(p), muestra la referencia de memoria (Producto@xxxxxxx), que viene del toString() heredado de Any.
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+¿Qué es una open class?
+Por defecto, todas las clases en Kotlin son final, es decir, no se pueden heredar.
+
+Para permitir que una clase pueda ser extendida (heredada) por otra, debes marcarla con la palabra clave open.
+
+EJEMPLO 1 HERENCIA:
+
+open class Nombre(val nombre: String) {
+    fun describir() {
+        println("Mi Nombre es $nombre")
+    }
+}
+
+class Apodo(nombre: String) : Nombre(nombre)
+
+fun main() {
+    val miPerro = Apodo("Rafo")
+    miPerro.describir()
+}
+
+EJEMPLO 2 HERENCIA:
+
+open class Empleado(val nombre: String, val salarioBase: Double) {
+    open fun calcularSalario(): Double {
+        return salarioBase
+    }
+}
+
+class EmpleadoTiempoCompleto(nombre: String, salarioBase: Double, val bono: Double)
+    : Empleado(nombre, salarioBase) {
+
+    override fun calcularSalario(): Double {
+        return salarioBase + bono
+    }
+}
+
+fun main() {
+    val emp1 = Empleado("Carlos", 2500.0)
+    val emp2 = EmpleadoTiempoCompleto("Ana", 2500.0, 500.0)
+
+    println("${emp1.nombre} gana ${emp1.calcularSalario()}")  // 2500.0
+    println("${emp2.nombre} gana ${emp2.calcularSalario()}")  // 3000.0
+}
+
+
+EJEMPLO 3 POLIMORFISMO:
+
+open class Figura {
+    open fun calcularArea(): Double {
+        return 0.0
+    }
+}
+
+class Cuadrado(val lado: Double) : Figura() {
+    override fun calcularArea(): Double {
+        return lado * lado
+    }
+}
+
+class Circulo(val radio: Double) : Figura() {
+    override fun calcularArea(): Double {
+        return Math.PI * radio * radio
+    }
+}
+
+fun main() {
+    val figuras: List<Figura> = listOf(
+        Cuadrado(4.0),
+        Circulo(2.0)
+    )
+
+    for (figura in figuras) {
+        println("Área: ${figura.calcularArea()}")
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////
+
+INTERFACES
+
+¿Para qué sirve?
+Define comportamientos comunes para diferentes clases no relacionadas entre sí.
+Permite una forma de herencia múltiple (una clase puede implementar varias interfaces).
+Se usa para diseñar sistemas modulares y desacoplados
+
+
+EJEMPLO 1:
+interface Imprimible {
+    fun imprimir()
+}
+
+class Documento: Imprimible {
+    override fun imprimir(){
+        println("Imprimiendo documento..")
+    }
+}
+
+fun main(){
+    val doc=Documento()
+    doc.imprimir()
+}
+
+EJEMPLO 2:
+
+interface OperacionMatematica {
+    fun calcular(a: Int, b: Int): Int
+}
+
+class Suma : OperacionMatematica {
+    override fun calcular(a: Int, b: Int): Int {
+        return a + b
+    }
+}
+
+class Multiplicacion : OperacionMatematica {
+    override fun calcular(a: Int, b: Int): Int {
+        return a * b
+    }
+}
+
+fun main() {
+    val operaciones: List<OperacionMatematica> = listOf(
+        Suma(),
+        Multiplicacion()
+    )
+
+    val a = 10
+    val b = 5
+
+    for (op in operaciones) {
+        val resultado = op.calcular(a, b)
+        println("Resultado: $resultado")
+    }
+}
+
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+LAMBDA
+
+Una lambda es una función anónima (sin nombre) que se puede almacenar en una variable y pasar como parámetro.
+
+EJEMPLO 1:
+
+val multiplicar: (Int, Int) -> Int = { x, y -> x * y }
+
+fun main() {
+    val resultado = multiplicar(3, 4)
+    println("Multiplicación: $resultado") 
+}
+
+
+
+EJEMPLO 2:
+
+import kotlin.math.pow
+
+fun operar(a: Int, b: Int, operacion: (Int, Int) -> Int): Int {
+    return operacion(a, b)
+}
+fun main() {
+    val suma = operar(5, 3) { x, y -> x + y }
+    val resta = operar(10, 4) { x, y -> x - y }
+    val potencia = operar(2, 3) { x, y -> x.toDouble().pow(y).toInt() }
+
+    println("Suma: $suma")         // 👉 Suma: 8
+    println("Resta: $resta")       // 👉 Resta: 6
+    println("Potencia: $potencia") // 👉 Potencia: 8
+}
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+EJEMPLO FINAL:
+
+// Interfaz para descuentos
+interface Descuento {
+    fun aplicar(precio: Double): Double
+}
+
+// Descuento fijo
+class DescuentoFijo(private val monto: Double) : Descuento {
+    override fun aplicar(precio: Double): Double {
+        return precio - monto
+    }
+}
+
+// Descuento por porcentaje
+class DescuentoPorcentaje(private val porcentaje: Double) : Descuento {
+    override fun aplicar(precio: Double): Double {
+        return precio - (precio * porcentaje / 100)
+    }
+}
+
+// Función que aplica un cálculo con lambda
+fun aplicarDescuento(precio: Double, estrategia: (Double) -> Double): Double {
+    return estrategia(precio)
+}
+
+// Función principal
+fun main() {
+    val precioOriginal = 100.0
+
+    // Usando clases
+    val fijo = DescuentoFijo(10.0)
+    val porcentaje = DescuentoPorcentaje(20.0)
+
+    println("Precio con descuento fijo: ${fijo.aplicar(precioOriginal)}")         // 90.0
+    println("Precio con descuento %: ${porcentaje.aplicar(precioOriginal)}")      // 80.0
+
+    // Usando lambda directamente
+    val resultadoLambda = aplicarDescuento(precioOriginal) { precio -> precio * 0.85 }
+    println("Precio con descuento 15% usando lambda: $resultadoLambda")           // 85.0
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
