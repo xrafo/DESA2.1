@@ -1,0 +1,131 @@
+ResultadoAprobacion.kt
+package banco
+
+data class ResultadoEvaluacion(
+    val dni: String,
+    val planCuotas: String,
+    val antecedentesOK: Boolean,
+    val score: Int,
+    val aprobado: Boolean
+)
+
+Servicios.kt
+import kotlinx.coroutines.*
+
+fun main(){
+    println("Inicio de programa")
+
+    //Ejecucion corutina
+    //GlobalScore: Alcance globa, vive mientras dure la aplicacion.
+    GlobalScope.launch { //Job coritina que se ejecuta de forma asincronica y no bloqueante
+        delay(1000L) //simular tarea
+        println("Hola desde Corutina")
+    }
+    print("Fin del programa, esperando corutina")
+}
+
+Evaluador.kt
+package banco
+import kotlinx.coroutines.*
+
+suspend fun evaluarSolicitudPrestamo(dni: String, monto: Double, plazo: Int)
+: ResultadoEvaluacion = coroutineScope {
+	
+    val antecedentesJob = async { verificarAntecedentes(dni) }
+    val cuotasJob = async { calcularCuotas(monto,plazo) }
+    val scoreJob = async { evaluarScore(dni) }
+    
+    val antecedentes = antecedentesJob.await()
+    val cuotas = cuotasJob.await()
+    val score = scoreJob.await()
+    val aprobado = antecedentes && score > 650
+    
+    ResultadoEvaluacion(
+        dni = dni,
+        planCuotas = cuotas,
+        antecedentesOK = antecedentes,
+        score = score,
+        aprobado = aprobado
+    )
+}
+
+main.kt
+package banco
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val dni = "12345678"
+    println("Iniciando evaluación para préstamo")
+    val resultado
+    = evaluarSolicitudPrestamo(dni = dni, monto= 15000.00, plazo = 24)
+
+    println("\nResumen de Evaluacion:")
+    println("DNI: ${resultado.dni}")
+    println("Plan de Cuotas: ${resultado.planCuotas}")
+    println("Antecedentes: ${resultado.antecedentesOK}")
+    println("Score: ${resultado.score}")
+
+    if (resultado.aprobado) {
+        println("\n Prèstamo aprobado, Se procede con el desembolso")}
+    else {
+        print(("\n Prestamo rechazado. Cliente no cumple con requisitos"))
+    }
+}
+
+
+
+main2.kt - cancelar corutinas
+import kotlinx.coroutines.*
+
+fun main() = runBlocking {
+    val job = launch {
+        repeat(5) {i ->
+            println("Ejecutando paso $i")
+            delay(1000)
+        }
+    }
+
+    delay(2500) // 2.5 seg
+    println("Cabcelando tarea..")
+    job.cancel() //cancela corutina
+
+    job.join() //espera a que termine completamente
+    println("Tarea Cancelada")
+}
+
+//main2.kt -timeouts
+import kotlinx.coroutines.*
+fun main() = runBlocking {
+    try {
+        withTimeout(3000) { // Tiempo máximo: 3 segundos
+            repeat(5) { i ->
+                println("Paso $i ejecutándose...")
+                delay(1000)
+            }
+        }
+    } catch (e: TimeoutCancellationException) {
+        println("La operación fue cancelada por timeout")
+    }
+}
+
+//main3.kt 
+// Canales
+
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.Channel
+
+fun main () = runBlocking {
+    val canal = Channel<String>()
+
+    //Productor
+    launch{
+    canal.send("Mensaje 1")
+    canal.send("Mensaje 2")
+    canal.close() //cierra el canal para no enviar mas datos
+    }
+
+    //consumidor
+    for (mensaje in canal){
+        println("Recibido: $mensaje")
+    }
+}
